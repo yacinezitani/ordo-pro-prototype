@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrdoPro V3 - Logiciel Médical & Ordonnances</title>
+  
+  <!-- SEO & Social Sharing (WhatsApp, Telegram, etc.) -->
+  <meta name="description" content="OrdoPro V3 - Solution de prescription médicale et certificats : saisie en 3 clics, aperçu A4 temps réel, gestion patients et ordonnances types.">
+  <meta name="theme-color" content="#0F2F57">
+  <meta property="og:title" content="OrdoPro V3 - Logiciel Médical & Ordonnances">
+  <meta property="og:description" content="Prototype interactif haute fidélité pour médecin : Saisie accélérée au clavier, aperçu A4 en direct, certificats conformes et gestion de cabinet.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+
+  <!-- Medical Brand Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='3' y='3' width='18' height='18' rx='5' fill='%230F2F57'/%3E%3Cpath d='M12 7v10M7 12h10' stroke='%232F80ED' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Mobile Screen Notice Banner -->
+<div id="mobile-notice-banner" class="mobile-notice-banner">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span>💻</span>
+    <span><strong>OrdoPro</strong> est optimisé pour écran d'ordinateur (PC cabinet). Pour tester l'aperçu A4 en direct, ouvrez ce lien sur votre ordinateur.</span>
+  </div>
+  <button type="button" class="btn-close-notice" onclick="this.parentElement.style.display='none'" title="Masquer">&times;</button>
+</div>
+
+<div id="app-shell">
+  <!-- ======================================================================
+       Sidebar Navigation (Spec #4, #22)
+       ====================================================================== -->
+  <aside class="sidebar">
+    <div>
+      <!-- Brand Header -->
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22">
+              <rect x="3" y="3" width="18" height="18" rx="4" stroke-width="2"/>
+              <path d="M12 8v8M8 12h8" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="brand-info">
+            <span class="brand-title">OrdoPro</span>
+            <span class="brand-subtitle">Votre assistant médical</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <a class="nav-item" data-view="home" onclick="navigateTo('home')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Accueil</span>
+        </a>
+        <a class="nav-item active" data-view="prescription" onclick="navigateTo('prescription')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Ordonnance</span>
+        </a>
+        <a class="nav-item" data-view="patients" onclick="navigateTo('patients')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Patients</span>
+        </a>
+        <a class="nav-item" data-view="presets" onclick="navigateTo('presets')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Ordonnances types</span>
+        </a>
+        <a class="nav-item" data-view="certificates" onclick="navigateTo('certificates')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+          <span>Certificats</span>
+        </a>
+        <a class="nav-item" data-view="medicines" onclick="navigateTo('medicines')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M10.5 7.5l3 3M7.5 10.5l9 9"/></svg>
+          <span>Base de médicaments</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Fixed Doctor Profile Card at Bottom (Spec #4, #22) -->
+    <div class="sidebar-footer">
+      <div class="doctor-identity-card" onclick="openEditDoctorModal()" title="Cliquer pour modifier vos coordonnées de cabinet" style="cursor: pointer;">
+        <div id="sidebar-doc-avatar" class="doctor-avatar">AB</div>
+        <div class="doctor-details">
+          <span id="sidebar-doc-name" class="doctor-name">Dr. Ahmed Benali</span>
+          <span id="sidebar-doc-spec" class="doctor-spec">Médecin généraliste</span>
+          <span class="license-tag"><span class="license-dot"></span> Cabinet Médical <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="10" height="10" style="margin-left: 2px; opacity: 0.7;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================================
+       Main App Wrapper
+       ====================================================================== -->
+  <div class="main-wrapper">
+    <!-- Minimalist Top Bar (Spec #5) -->
+    <header class="top-bar">
+      <div class="top-bar-search">
+        <div class="search-input-wrapper">
+          <svg class="search-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="global-search-input" class="global-search-input" placeholder="Recherche globale... (Ctrl+K)">
+          <span class="search-kbd-shortcut">Ctrl+K</span>
+        </div>
+      </div>
+
+      <div class="top-bar-actions">
+        <button class="btn btn-secondary" onclick="openNewPatientModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nouveau patient
+        </button>
+        <button class="btn-fast-new-ordo" onclick="resetPrescription(); navigateTo('prescription');">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nouvelle ordonnance
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Container -->
+    <main class="page-container">
+
+      <!-- ================================================================
+           VIEW: NOUVELLE ORDONNANCE (Flagship Screen - Spec #9)
+           ================================================================ -->
+      <section id="view-prescription" class="page-view active-view">
+        <div class="prescription-workspace">
+          
+          <!-- Left: Editor Pane -->
+          <div class="prescription-editor-pane">
+            <!-- Header bar -->
+            <div class="ordo-editor-header">
+              <div class="ordo-title-group">
+                <span class="ordo-title">Éditeur d'ordonnance</span>
+                <span id="ordo-meds-count" class="badge-sexe badge-homme">3 médicaments</span>
+              </div>
+              <div class="ordo-date-group">
+                <label for="ordo-date-input" class="date-label">Date :</label>
+                <input type="text" id="ordo-date-input" class="date-input" value="05/10/2026" onchange="AppState.activePrescription.date = this.value; renderA4Preview();">
+              </div>
+            </div>
+
+            <!-- Patient Selector Card (Spec #8) -->
+            <div id="ordo-patient-card" class="patient-selector-card">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Medicine Search & Fast Input Section (Spec #11, #12) -->
+            <div class="medicine-search-section">
+              <div class="search-medicine-bar-wrapper">
+                <input type="text" id="medicine-search-input" class="search-medicine-input" placeholder="Rechercher un médicament (ex: Doliprane 1000, Amoxicilline...) ou appuyez sur Entrée">
+                <button class="btn btn-primary" onclick="handleMedicineEnterKey(document.getElementById('medicine-search-input').value.trim())">
+                  + Ajouter
+                </button>
+                <!-- Autocomplete Dropdown -->
+                <div id="medicine-autocomplete-dropdown" class="medicine-autocomplete-dropdown"></div>
+              </div>
+            </div>
+
+            <!-- Prescription Items Table (Spec #13) -->
+            <div class="prescription-table-wrapper">
+              <div class="prescription-table-header">
+                <span class="table-header-title">Médicaments prescrits</span>
+                <button class="btn btn-sm btn-subtle" onclick="openPresetsDrawer()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                  + Appliquer un modèle type
+                </button>
+              </div>
+
+              <div id="medicine-rows-container" class="medicine-rows-list">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Empty State (Spec #25) -->
+              <div id="empty-prescription-state" class="empty-prescription-state" style="display: none;">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <div class="empty-title">Aucun médicament ajouté</div>
+                <div class="empty-desc">Recherchez un médicament ci-dessus ou insérez une ordonnance type pour commencer.</div>
+              </div>
+            </div>
+
+            <!-- Bottom Actions Bar (Spec #9, #24) -->
+            <div class="ordo-editor-footer">
+              <div class="footer-actions-left">
+                <button class="btn btn-secondary" onclick="resetPrescription()">
+                  Nouvelle vierge (Ctrl+N)
+                </button>
+                <button class="btn btn-secondary" onclick="openCreatePresetModal(true)" title="Créer une ordonnance type à partir des médicaments actuels">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                  Enregistrer comme modèle
+                </button>
+              </div>
+              <div class="footer-actions-right">
+                <button class="btn btn-secondary" onclick="savePrescription()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Enregistrer (Ctrl+S)
+                </button>
+                <button class="btn btn-primary" onclick="triggerPrint()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Imprimer (Ctrl+P)
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Live A4 Prescription Sheet Preview (Spec #21, #23) -->
+          <div class="prescription-preview-pane">
+            <div class="a4-preview-toolbar">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="preview-badge">Aperçu A4 en direct</span>
+                <div class="zoom-controls">
+                  <button class="zoom-btn" onclick="changeZoom(-0.05)" title="Réduire">−</button>
+                  <span id="zoom-level-text" class="zoom-level-text">95%</span>
+                  <button class="zoom-btn" onclick="changeZoom(0.05)" title="Agrandir">+</button>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-secondary" style="color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2);" onclick="triggerPrint()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Imprimer
+              </button>
+            </div>
+
+            <!-- The Authentic Algerian A4 Sheet Document Container -->
+            <div id="a4-sheet-container" class="a4-sheet-container" style="transform: scale(0.95);">
+              <div id="a4-sheet-preview" class="a4-sheet">
+                <!-- Dynamically populated via renderA4Preview() -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW: ACCUEIL (Dashboard - Spec #6)
+           ================================================================ -->
+      <section id="view-home" class="page-view">
+        <div class="home-header">
+          <h1 class="home-greeting">Bonjour, Dr. Ahmed Benali</h1>
+          <p class="home-subtitle">Cabinet de médecine générale • Que souhaitez-vous faire ?</p>
+        </div>
+
+        <!-- 4 Quick Actions (Spec #6) -->
+        <div class="quick-actions-grid">
+          <div class="quick-action-card" onclick="openNewPatientModal()">
+            <div class="action-card-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            </div>
+            <div class="action-card-title">+ Nouveau patient</div>
+            <div class="action-card-desc">Enregistrement rapide en 3 champs sans friction</div>
+          </div>
+
+          <div class="quick-action-card" onclick="resetPrescription(); navigateTo('prescription');">
+            <div class="action-card-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </div>
+            <div class="action-card-title">+ Nouvelle ordonnance</div>
+            <div class="action-card-desc">Saisie accélérée au clavier & aperçu A4 instantané</div>
+          </div>
+
+          <div class="quick-action-card" onclick="navigateTo('presets')">
+            <div class="action-card-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <div class="action-card-title">Ordonnances types</div>
+            <div class="action-card-desc">Protocoles pré-enregistrés (Fièvre, Infection, Gastrite...)</div>
+          </div>
+
+          <div class="quick-action-card" onclick="navigateTo('certificates')">
+            <div class="action-card-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+            </div>
+            <div class="action-card-title">Certificats médicaux</div>
+            <div class="action-card-desc">Arrêt de travail, repos, aptitude sportive, descriptif</div>
+          </div>
+        </div>
+
+        <!-- 2 Columns: Patients Récents & Shortcuts -->
+        <div class="home-layout-grid">
+          <!-- Recent Patients List -->
+          <div class="card">
+            <div class="home-section-header">
+              <span class="home-section-title">Patients récents</span>
+              <button class="btn btn-sm btn-subtle" onclick="navigateTo('patients')">Voir tous les patients</button>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Âge</th>
+                    <th>Sexe</th>
+                    <th>Dernière ordonnance</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="home-recent-patients">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Shortcuts Panel -->
+          <div class="shortcut-card">
+            <h3 class="card-title">Raccourcis clavier productivité</h3>
+            <p class="text-secondary" style="font-size: 12.5px; margin-top: 4px;">Optimisé pour le médecin qui consulte à un rythme soutenu.</p>
+            <div class="shortcut-list">
+              <div class="shortcut-row">
+                <span>Nouvelle ordonnance</span>
+                <kbd>Ctrl + N</kbd>
+              </div>
+              <div class="shortcut-row">
+                <span>Enregistrer</span>
+                <kbd>Ctrl + S</kbd>
+              </div>
+              <div class="shortcut-row">
+                <span>Imprimer l'A4</span>
+                <kbd>Ctrl + P</kbd>
+              </div>
+              <div class="shortcut-row">
+                <span>Recherche globale</span>
+                <kbd>Ctrl + K</kbd>
+              </div>
+              <div class="shortcut-row">
+                <span>Ajout rapide médicament</span>
+                <kbd>Entrée</kbd>
+              </div>
+              <div class="shortcut-row">
+                <span>Fermer fenêtre</span>
+                <kbd>Échap</kbd>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW: PATIENTS (Directory)
+           ================================================================ -->
+      <section id="view-patients" class="page-view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h1 class="page-title">Répertoire des patients</h1>
+            <p class="text-secondary">Dossiers patients épurés conformément à la réglementation médicale</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="search-input-wrapper" style="width: 280px;">
+              <svg class="search-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="patients-search-input" class="global-search-input" placeholder="Rechercher un patient..." oninput="filterPatientsList(this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="openNewPatientModal()">
+              + Nouveau patient
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nom complet</th>
+                  <th>Âge</th>
+                  <th>Sexe</th>
+                  <th>Dernière ordonnance</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="patients-full-table">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+          <div id="patients-empty-search" class="empty-prescription-state" style="display: none; padding: 40px 20px;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div class="empty-title">Aucun patient trouvé</div>
+            <div class="empty-desc">Aucun dossier patient ne correspond à votre recherche.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW: ORDONNANCES TYPES (Spec #17, #18)
+           ================================================================ -->
+      <section id="view-presets" class="page-view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h1 class="page-title">Ordonnances types</h1>
+            <p class="text-secondary">Ensembles pré-enregistrés de traitements pour les pathologies fréquentes</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCreatePresetModal()">
+            + Nouvelle ordonnance type
+          </button>
+        </div>
+
+        <div id="presets-cards-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ================================================================
+           VIEW: CERTIFICATS (Spec #20)
+           ================================================================ -->
+      <!-- ================================================================
+           VIEW: CERTIFICATS MÉDICAUX (Complete Professional Workflow)
+           ================================================================ -->
+      <section id="view-certificates" class="page-view">
+        
+        <!-- SUB-VIEW 1: Dashboard (Modèles & Certificats récents) -->
+        <div id="cert-dashboard-view">
+          <!-- Page Header -->
+          <div class="cert-page-header">
+            <div>
+              <h1 class="page-title">Certificats médicaux</h1>
+              <p class="text-secondary">Créez, personnalisez et imprimez vos certificats médicaux.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateCertTemplateModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              + Créer un modèle
+            </button>
+          </div>
+
+          <!-- Section A: Modèles de certificats -->
+          <div class="cert-section-block">
+            <div class="cert-section-header">
+              <div class="cert-section-title-group">
+                <h2 class="cert-section-title">Modèles de certificats</h2>
+                <span id="cert-templates-count" class="badge-sexe badge-homme">5 modèles</span>
+              </div>
+              <span class="text-muted" style="font-size: 13px;">Sélectionnez un modèle pour commencer la rédaction</span>
+            </div>
+
+            <!-- Templates Grid -->
+            <div id="cert-templates-grid" class="cert-templates-grid">
+              <!-- Dynamically populated via renderCertTemplates() -->
+            </div>
+          </div>
+
+          <!-- Section B: Certificats récents -->
+          <div class="cert-section-block" style="margin-top: 28px;">
+            <div class="cert-section-header">
+              <div class="cert-section-title-group">
+                <h2 class="cert-section-title">Certificats récents</h2>
+                <span id="cert-recent-count" class="badge-sexe badge-homme">4 certificats</span>
+              </div>
+              <span class="text-muted" style="font-size: 13px;">Historique des documents générés</span>
+            </div>
+
+            <div class="card" style="padding: 0; overflow: hidden;">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Patient</th>
+                      <th>Type de certificat</th>
+                      <th>Date</th>
+                      <th>Statut</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cert-recent-table-body">
+                    <!-- Dynamically populated via renderRecentCertificates() -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="cert-recent-empty" class="empty-prescription-state" style="display: none; padding: 36px 20px;">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div class="empty-title">Aucun certificat récent</div>
+                <div class="empty-desc">Choisissez un modèle ci-dessus pour rédiger votre premier certificat médical.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 2: Certificate Editor Workspace (Two-Column Desktop Layout) -->
+        <div id="cert-editor-view" style="display: none;">
+          <!-- Editor Top Bar / Breadcrumb -->
+          <div class="cert-editor-topbar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="btn btn-secondary btn-sm" onclick="returnToCertDashboard()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Retour aux certificats
+              </button>
+              <div class="cert-editor-breadcrumb">
+                <span id="cert-editor-template-badge" class="badge-sexe badge-homme">Modèle : Certificat de repos</span>
+                <span id="cert-editor-instance-mode" class="cert-mode-indicator">Nouveau document</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="saveActiveCertificate()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                Enregistrer
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="triggerCertificatePrint()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Imprimer (Ctrl+P)
+              </button>
+            </div>
+          </div>
+
+          <!-- Two-column workspace -->
+          <div class="certificate-workspace">
+            
+            <!-- LEFT COLUMN: Certificate Form / Editor (~45%) -->
+            <div class="certificate-editor-pane">
+              
+              <!-- Patient Selector Card -->
+              <div id="cert-patient-card" class="patient-selector-card">
+                <!-- Dynamically populated via JS -->
+              </div>
+
+              <!-- General Date & Title Block -->
+              <div class="card" style="padding: 16px;">
+                <div style="display: flex; gap: 14px;">
+                  <div class="form-group" style="flex: 2;">
+                    <label for="cert-doc-title-input" class="form-label">Titre officiel du certificat</label>
+                    <input type="text" id="cert-doc-title-input" class="form-input" oninput="onCertTitleChange(this.value)">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="cert-date-input" class="form-label">Date</label>
+                    <input type="text" id="cert-date-input" class="form-input" value="05/10/2026" onchange="onCertDateChange(this.value)">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dynamic Certificate-Specific Form Fields -->
+              <div id="cert-specific-fields-container" class="card" style="padding: 16px;">
+                <!-- Dynamically populated depending on template type -->
+              </div>
+
+              <!-- Custom Content / Text Editor with Live Variable Chips -->
+              <div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <label for="cert-custom-content" class="form-label" style="margin-bottom: 2px;">Contenu du certificat</label>
+                    <span class="text-muted" style="font-size: 11.5px;">Le texte est personnalisable et synchronisé en direct avec l'aperçu A4</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-subtle" onclick="regenerateCertTextFromFields()" title="Régénérer le texte d'après les champs">
+                    ↺ Réinitialiser le texte
+                  </button>
+                </div>
+
+                <!-- Dynamic Variables Insertion Toolbar -->
+                <div class="cert-variables-toolbar">
+                  <span class="cert-var-toolbar-label">Insérer :</span>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{patient.nom}}')">+ Nom patient</button>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{patient.age}}')">+ Âge</button>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{date}}')">+ Date</button>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{doctor.nom}}')">+ Médecin</button>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{doctor.specialite}}')">+ Spécialité</button>
+                  <button type="button" class="cert-var-chip" onclick="insertVariableIntoCert('{{doctor.numero_ordre}}')">+ N° Ordre</button>
+                </div>
+
+                <!-- Textarea -->
+                <textarea id="cert-custom-content" class="cert-textarea" rows="7" placeholder="Rédigez ou ajustez ici le texte du certificat..." oninput="onCertTextChange(this.value)"></textarea>
+              </div>
+
+              <!-- Bottom Actions Bar -->
+              <div class="ordo-editor-footer" style="margin-top: auto;">
+                <div class="footer-actions-left">
+                  <button class="btn btn-secondary" onclick="returnToCertDashboard()">
+                    Annuler
+                  </button>
+                </div>
+                <div class="footer-actions-right">
+                  <button class="btn btn-secondary" onclick="saveActiveCertificate()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                    Enregistrer
+                  </button>
+                  <button class="btn btn-primary" onclick="triggerCertificatePrint()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Imprimer le certificat (Ctrl+P)
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Live A4 Preview (~55%) -->
+            <div class="certificate-preview-pane">
+              <div class="a4-preview-toolbar">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="preview-badge">Aperçu A4 en direct</span>
+                  <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="changeCertZoom(-0.05)" title="Réduire">−</button>
+                    <span id="cert-zoom-level-text" class="zoom-level-text">95%</span>
+                    <button class="zoom-btn" onclick="changeCertZoom(0.05)" title="Agrandir">+</button>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-secondary" style="color: #FFFFFF; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2);" onclick="triggerCertificatePrint()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Imprimer
+                </button>
+              </div>
+
+              <!-- A4 Sheet Container -->
+              <div id="cert-a4-sheet-container" class="a4-sheet-container" style="transform: scale(0.95);">
+                <div id="cert-a4-sheet-preview" class="a4-sheet">
+                  <!-- Dynamically populated via renderCertificateA4Preview() -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================================
+           VIEW: BASE DE MÉDICAMENTS (Spec #19)
+           ================================================================ -->
+      <section id="view-medicines" class="page-view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h1 class="page-title">Base de médicaments</h1>
+            <p class="text-secondary">Formulaire thérapeutique national algérien & spécialités</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="search-input-wrapper" style="width: 280px;">
+              <svg class="search-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="medicines-search-input" class="global-search-input" placeholder="Rechercher par nom, DCI..." oninput="filterMedicinesList(this.value)">
+            </div>
+            <button class="btn btn-primary" onclick="openAddDbMedicineModal()">
+              + Ajouter un médicament à la base
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nom commercial</th>
+                  <th>DCI (Dénomination Commune)</th>
+                  <th>Pathologie par défaut</th>
+                  <th>Quantité habituelle</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="medicines-full-table">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+          <div id="medicines-empty-search" class="empty-prescription-state" style="display: none; padding: 40px 20px;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M10.5 7.5l3 3M7.5 10.5l9 9"/></svg>
+            <div class="empty-title">Aucun médicament trouvé</div>
+            <div class="empty-desc">Aucun médicament du formulaire ne correspond à votre recherche.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ======================================================================
+     MODALS
+     ====================================================================== -->
+
+<!-- 1. Modal: Nouveau / Modifier Patient (Spec #7) -->
+<div id="modal-new-patient" class="modal-backdrop" onclick="if(event.target === this) closeModal('modal-new-patient')">
+  <div class="modal-container" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span id="modal-patient-title" class="modal-title">Nouveau patient</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-new-patient')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="new-patient-nom" class="form-label">Nom complet *</label>
+        <input type="text" id="new-patient-nom" class="form-input" placeholder="ex: Ahmed Benali" autofocus required>
+        <span class="form-hint">Seul le nom complet est obligatoire.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="new-patient-age" class="form-label">Âge (facultatif)</label>
+        <input type="number" id="new-patient-age" class="form-input" placeholder="ex: 40" min="0" max="120">
+        <span class="form-hint">S'il est renseigné, il sera imprimé sous la forme « A : 40 ans ».</span>
+      </div>
+
+      <div class="form-group">
+        <label for="new-patient-sexe" class="form-label">Sexe (facultatif)</label>
+        <select id="new-patient-sexe" class="form-select">
+          <option value="">Non renseigné</option>
+          <option value="Homme">Homme</option>
+          <option value="Femme">Femme</option>
+        </select>
+        <span class="form-hint">Le sexe est utile pour le dossier clinique mais <strong>ne sera jamais imprimé</strong>.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-new-patient')">Annuler</button>
+      <button id="btn-save-patient" class="btn btn-primary" onclick="savePatientModal()">Créer le patient</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Modal: Modifier Médicament (Spec #14) -->
+<div id="modal-edit-medicine" class="modal-backdrop">
+  <div class="modal-container">
+    <div class="modal-header">
+      <span class="modal-title">Modifier le médicament</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-edit-medicine')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="edit-med-name" class="form-label">Médicament</label>
+        <input type="text" id="edit-med-name" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label for="edit-med-pathology" class="form-label">Pathologie</label>
+        <input type="text" id="edit-med-pathology" class="form-input" placeholder="ex: Fièvre, Gastrite...">
+      </div>
+      <div class="form-group">
+        <label for="edit-med-quantity" class="form-label">Quantité</label>
+        <input type="number" id="edit-med-quantity" class="form-input" min="1">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-medicine')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEditedMedicine()">Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Modal: Ajouter Médicament Personnalisé (Spec #12) -->
+<div id="modal-custom-medicine" class="modal-backdrop">
+  <div class="modal-container">
+    <div class="modal-header">
+      <span class="modal-title">Médicament personnalisé</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-custom-medicine')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="custom-med-name" class="form-label">Nom du médicament *</label>
+        <input type="text" id="custom-med-name" class="form-input" placeholder="ex: Préparation magistrale..." required>
+      </div>
+      <div class="form-group">
+        <label for="custom-med-pathology" class="form-label">Pathologie</label>
+        <input type="text" id="custom-med-pathology" class="form-input" placeholder="ex: Dermatite">
+      </div>
+      <div class="form-group">
+        <label for="custom-med-quantity" class="form-label">Quantité</label>
+        <input type="number" id="custom-med-quantity" class="form-input" value="20" min="1">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-custom-medicine')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCustomMedicine()">Ajouter à l'ordonnance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ajouter / Modifier Médicament dans la Base (Spec #19) -->
+<div id="modal-db-medicine" class="modal-backdrop" onclick="if(event.target === this) closeModal('modal-db-medicine')">
+  <div class="modal-container" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span id="modal-db-medicine-title" class="modal-title">Nouveau médicament au formulaire</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-db-medicine')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="db-med-nom" class="form-label">Nom commercial *</label>
+        <input type="text" id="db-med-nom" class="form-input" placeholder="ex: Augmentin 1 g/125 mg" required autofocus>
+        <span class="form-hint">Nom de marque avec dosage principal.</span>
+      </div>
+      <div class="form-group">
+        <label for="db-med-dci" class="form-label">DCI (Dénomination Commune Internationale)</label>
+        <input type="text" id="db-med-dci" class="form-input" placeholder="ex: Amoxicilline / Acide clavulanique">
+        <span class="form-hint">Principe actif pour la recherche rapide.</span>
+      </div>
+      <div class="form-group">
+        <label for="db-med-pathology" class="form-label">Pathologie / Indication par défaut</label>
+        <input type="text" id="db-med-pathology" class="form-input" placeholder="ex: Infection bactérienne">
+      </div>
+      <div class="form-group">
+        <label for="db-med-quantity" class="form-label">Quantité habituelle par défaut</label>
+        <input type="number" id="db-med-quantity" class="form-input" value="20" min="1">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-db-medicine')">Annuler</button>
+      <button id="btn-save-db-medicine" class="btn btn-primary" onclick="saveDbMedicine()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Modifier Coordonnées Cabinet & Médecin (Spec #1, #4, #22) -->
+<div id="modal-edit-doctor" class="modal-backdrop" onclick="if(event.target === this) closeModal('modal-edit-doctor')">
+  <div class="modal-container" style="width: 540px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">Coordonnées du cabinet médical</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-edit-doctor')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-name" class="form-label">Nom du médecin (Français) *</label>
+          <input type="text" id="doc-edit-name" class="form-input" placeholder="ex: Dr. Ahmed Benali" required>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-name-ar" class="form-label">Nom du médecin (Arabe)</label>
+          <input type="text" id="doc-edit-name-ar" class="form-input" placeholder="ex: د. أحمد بن علي" dir="rtl">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-title" class="form-label">Spécialité (Français) *</label>
+          <input type="text" id="doc-edit-title" class="form-input" placeholder="ex: Médecin généraliste">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-spec-ar" class="form-label">Spécialité (Arabe)</label>
+          <input type="text" id="doc-edit-spec-ar" class="form-input" placeholder="ex: طب عام" dir="rtl">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="doc-edit-faculty" class="form-label">Faculté / Diplômes</label>
+        <input type="text" id="doc-edit-faculty" class="form-input" placeholder="ex: Diplômé de la Faculté de Médecine d'Alger">
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-ordernum" class="form-label">N° d'Ordre</label>
+          <input type="text" id="doc-edit-ordernum" class="form-input" placeholder="ex: 16/4892">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="doc-edit-agreement" class="form-label">N° Agrément</label>
+          <input type="text" id="doc-edit-agreement" class="form-input" placeholder="ex: 2018/MS/094">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="doc-edit-address" class="form-label">Adresse du cabinet</label>
+        <input type="text" id="doc-edit-address" class="form-input" placeholder="ex: 14 Boulevard Colonel Amirouche, Alger">
+      </div>
+
+      <div class="form-group">
+        <label for="doc-edit-phone" class="form-label">Téléphone(s) du cabinet</label>
+        <input type="text" id="doc-edit-phone" class="form-input" placeholder="ex: 021 63 45 78 / 0550 12 34 56">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-doctor')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveDoctorProfile()">Enregistrer les coordonnées</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Modal: Sélecteur de patient -->
+<div id="modal-select-patient" class="modal-backdrop">
+  <div class="modal-container">
+    <div class="modal-header">
+      <span class="modal-title">Choisir un patient</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-select-patient')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="patient-selector-list" style="max-height: 320px; overflow-y: auto;">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-select-patient')">Fermer</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-select-patient'); openNewPatientModal();">+ Créer nouveau patient</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Modal: Nouvelle ordonnance type (Senior UI & Medical Structure) -->
+<div id="modal-create-preset" class="modal-backdrop" onclick="if(event.target === this) closeModal('modal-create-preset')">
+  <div class="modal-container modal-preset-container" onclick="event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-preset-header">
+      <span id="modal-preset-title" class="modal-preset-title">Nouvelle ordonnance type</span>
+      <button class="modal-preset-close" onclick="closeModal('modal-create-preset')" title="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-preset-body">
+      <!-- 1. Nom de l'ordonnance type -->
+      <div class="form-group">
+        <label for="new-preset-nom" class="preset-field-label">Nom de l'ordonnance type</label>
+        <input 
+          type="text" 
+          id="new-preset-nom" 
+          class="preset-text-input" 
+          placeholder="Ex: Angine, Grippe, Gastro..." 
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <!-- 2. Médicaments Section -->
+      <div class="preset-meds-section">
+        <div class="preset-meds-header-row">
+          <label class="preset-field-label" style="margin-bottom: 0;">Médicaments</label>
+          <button type="button" class="btn-preset-add-blue" onclick="togglePresetAddMedForm()">
+            + Ajouter
+          </button>
+        </div>
+
+        <!-- Container Box for added medications -->
+        <div class="preset-meds-container-box" id="preset-meds-container-box">
+          <!-- Inline addition form (toggled by + Ajouter) -->
+          <div id="preset-add-med-form" class="preset-add-form-panel" style="display: none;">
+            <div class="preset-add-form-title">Ajouter un médicament au modèle</div>
+            <div class="form-group" style="position: relative;">
+              <label for="preset-new-med-nom" class="preset-field-label-sm">Nom du médicament *</label>
+              <input 
+                type="text" 
+                id="preset-new-med-nom" 
+                class="preset-input-compact" 
+                placeholder="Ex: Doliprane 1000 mg, Spasfon, rezarzaraze..." 
+                autocomplete="off"
+                oninput="onPresetMedSearchInput(event)"
+                onkeydown="onPresetMedSearchKeydown(event)"
+              >
+              <div id="preset-med-autocomplete" class="preset-autocomplete-box" style="display: none;"></div>
+            </div>
+
+            <div class="preset-form-grid-2">
+              <div class="form-group">
+                <label for="preset-new-med-posologie" class="preset-field-label-sm">Posologie</label>
+                <input 
+                  type="text" 
+                  id="preset-new-med-posologie" 
+                  class="preset-input-compact" 
+                  placeholder="Ex: 1 cp/j"
+                  value="1 cp/j"
+                  onkeydown="if(event.key==='Enter') confirmAddMedToPreset()"
+                >
+              </div>
+              <div class="form-group">
+                <label for="preset-new-med-quantite" class="preset-field-label-sm">Quantité / Conditionnement</label>
+                <input 
+                  type="text" 
+                  id="preset-new-med-quantite" 
+                  class="preset-input-compact" 
+                  placeholder="Ex: 1 boîte"
+                  value="1 boîte"
+                  onkeydown="if(event.key==='Enter') confirmAddMedToPreset()"
+                >
+              </div>
+            </div>
+
+            <div class="preset-form-actions-row">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="hidePresetAddMedForm()">Annuler</button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="confirmAddMedToPreset()">Valider l'ajout</button>
+            </div>
+          </div>
+
+          <!-- List of draft medications in this preset -->
+          <div id="preset-meds-list" class="preset-meds-cards-list">
+            <!-- Dynamically populated via renderPresetDraftMedicines() -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-preset-footer">
+      <button type="button" class="btn-preset-pill-cancel" onclick="closeModal('modal-create-preset')">
+        Annuler
+      </button>
+      <button type="button" class="btn-preset-pill-save" onclick="saveNewPreset()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        <span>Enregistrer</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. Modal: Créer / Modifier un modèle de certificat -->
+<div id="modal-cert-template" class="modal-backdrop" onclick="if(event.target === this) closeModal('modal-cert-template')">
+  <div class="modal-container modal-cert-tpl-container" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span id="modal-cert-template-title" class="modal-title">Nouveau modèle de certificat</span>
+      <button class="btn-close-modal" onclick="closeModal('modal-cert-template')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="tpl-cert-nom" class="form-label">Nom du modèle *</label>
+        <input type="text" id="tpl-cert-nom" class="form-input" placeholder="ex: Certificat de dispense de sport" required>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div class="form-group" style="flex: 1;">
+          <label for="tpl-cert-type" class="form-label">Type de certificat *</label>
+          <select id="tpl-cert-type" class="form-select">
+            <option value="repos">Arrêt de travail / Repos</option>
+            <option value="aptitude">Aptitude physique / Sport</option>
+            <option value="descriptif">Constat descriptif</option>
+            <option value="reprise">Reprise d'activité</option>
+            <option value="custom">Certificat personnalisé</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="tpl-cert-badge" class="form-label">Badge de catégorie</label>
+          <input type="text" id="tpl-cert-badge" class="form-input" placeholder="ex: Dispense scolaire">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tpl-cert-desc" class="form-label">Description courte</label>
+        <input type="text" id="tpl-cert-desc" class="form-input" placeholder="ex: Attestation de contre-indication temporaire aux activités physiques scolaires">
+      </div>
+
+      <div class="form-group">
+        <label for="tpl-cert-text" class="form-label" style="margin-bottom: 4px;">Structure du document (Texte avec variables dynamiques) *</label>
+        
+        <!-- Variable insertion chips -->
+        <div class="cert-variables-toolbar" style="margin-bottom: 6px;">
+          <span class="cert-var-toolbar-label">Variables :</span>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{patient.nom}}')">+ Nom patient</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{patient.age}}')">+ Âge</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{patient.sexe}}')">+ Sexe</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{date}}')">+ Date</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{doctor.nom}}')">+ Médecin</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{doctor.specialite}}')">+ Spécialité</button>
+          <button type="button" class="cert-var-chip" onclick="insertVariableIntoTpl('{{doctor.numero_ordre}}')">+ N° Ordre</button>
+        </div>
+        <textarea id="tpl-cert-text" class="cert-textarea" rows="6" placeholder="Je soussigné Dr. {{doctor.nom}}, certifie que l'état de santé de {{patient.nom}}..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-cert-template')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCertTemplate()">Enregistrer le modèle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================
+     DRAWERS (SLIDE-OVERS)
+     ====================================================================== -->
+
+<!-- Drawer 1: Ordonnances précédentes (Spec #15, #16) -->
+<div id="drawer-previous-prescriptions-backdrop" class="drawer-backdrop" onclick="closeDrawer('drawer-previous-prescriptions')"></div>
+<aside id="drawer-previous-prescriptions" class="drawer-panel">
+  <div class="drawer-header">
+    <div>
+      <h3 class="card-title">Ordonnances précédentes</h3>
+      <span class="text-muted" style="font-size: 12px;">Historique du patient actif</span>
+    </div>
+    <button class="btn-close-modal" onclick="closeDrawer('drawer-previous-prescriptions')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div id="previous-prescriptions-list" class="drawer-body">
+    <!-- Dynamically populated via JS -->
+  </div>
+</aside>
+
+<!-- Drawer 2: Ordonnances types (Spec #17) -->
+<div id="drawer-treatment-presets-backdrop" class="drawer-backdrop" onclick="closeDrawer('drawer-treatment-presets')"></div>
+<aside id="drawer-treatment-presets" class="drawer-panel">
+  <div class="drawer-header">
+    <div>
+      <h3 class="card-title">Appliquer une ordonnance type</h3>
+      <span class="text-muted" style="font-size: 12px;">Ajoute en 1 clic les médicaments types</span>
+    </div>
+    <button class="btn-close-modal" onclick="closeDrawer('drawer-treatment-presets')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div id="presets-list-drawer" class="drawer-body">
+    <!-- Dynamically populated via JS -->
+  </div>
+</aside>
+
+<!-- Floating Reviewer Showcase Bar (Quick test all 19 states) -->
+<div class="prototype-showcase-bar">
+  <span class="showcase-label">Démos V3 :</span>
+  <button class="showcase-pill-btn" onclick="navigateTo('prescription')">Ordonnance</button>
+  <button class="showcase-pill-btn" onclick="navigateTo('home')">Accueil</button>
+  <button class="showcase-pill-btn" onclick="openNewPatientModal()">+ Nouveau patient</button>
+  <button class="showcase-pill-btn" onclick="openPreviousPrescriptionsDrawer()">Ordo précédentes</button>
+  <button class="showcase-pill-btn" onclick="openPresetsDrawer()">Ordo types</button>
+  <button class="showcase-pill-btn" onclick="openCreatePresetModal()">+ Nouvelle ordo type</button>
+  <button class="showcase-pill-btn" onclick="navigateTo('certificates')">Certificats médicaux</button>
+  <button class="showcase-pill-btn" onclick="openCustomMedicineModal('Amoxicilline injectable')">+ Méd. personnalisé</button>
+  <button class="showcase-pill-btn" onclick="testEmptyState()">État vide</button>
+  <button class="showcase-pill-btn" onclick="triggerPrint()">Imprimer A4</button>
+  <button class="showcase-pill-btn" style="background: rgba(214, 69, 69, 0.2); border-color: rgba(214, 69, 69, 0.4); color: #FFA3A3;" onclick="resetDemoData()" title="Réinitialiser toutes les données par défaut">↺ Réinitialiser démo</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

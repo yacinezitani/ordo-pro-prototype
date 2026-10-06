@@ -1,0 +1,145 @@
+{
+  "product": "OrdoPro",
+  "version": "3.0",
+  "locale": "fr-FR",
+  "platform": "windows-desktop",
+  "framework": "flutter",
+  "patient": {
+    "required": [
+      "nom_complet"
+    ],
+    "optional": [
+      "age",
+      "sexe"
+    ],
+    "excluded": [
+      "telephone",
+      "adresse",
+      "localisation",
+      "numero_dossier"
+    ],
+    "print_rules": {
+      "age": "print only when not null, format 'A : {age} ans'",
+      "sexe": "never print"
+    }
+  },
+  "prescription": {
+    "fields": [
+      "medicament",
+      "pathologie",
+      "quantite"
+    ],
+    "excluded": [
+      "dosage",
+      "forme",
+      "duree",
+      "posologie",
+      "conseils"
+    ],
+    "date": {
+      "default": "today",
+      "editable": true
+    },
+    "actions": [
+      "edit",
+      "delete"
+    ],
+    "quick_add": {
+      "enter_adds_exact_match": true,
+      "allow_custom_medicine": true
+    }
+  },
+  "navigation": [
+    "Accueil",
+    "Patients",
+    "Ordonnances types",
+    "Certificats",
+    "Base de médicaments"
+  ],
+  "removed_navigation": [
+    "Ordonnances",
+    "Historique",
+    "Paramètres",
+    "Déconnexion"
+  ],
+  "top_bar": {
+    "search": true,
+    "notifications": false,
+    "date": false,
+    "time": false,
+    "user_avatar": false
+  },
+  "colors": {
+    "primary_900": "#0F2F57",
+    "primary_800": "#153E70",
+    "primary_700": "#1856A0",
+    "primary_600": "#1769D2",
+    "primary_500": "#2F80ED",
+    "primary_100": "#EAF3FF",
+    "primary_50": "#F5F9FF",
+    "background": "#F6F8FB",
+    "surface": "#FFFFFF",
+    "border": "#DDE5EF",
+    "text_primary": "#172033",
+    "text_secondary": "#5E6B7D",
+    "text_muted": "#8A95A5",
+    "success": "#16845B",
+    "warning": "#B7791F",
+    "error": "#D64545"
+  },
+  "layout": {
+    "sidebar_expanded_px": 250,
+    "sidebar_collapsed_px": 72,
+    "page_padding_px": 24,
+    "card_padding_px": 20,
+    "input_height_px": 42,
+    "button_height_px": 42,
+    "radius_input_px": 8,
+    "radius_button_px": 8,
+    "radius_card_px": 12,
+    "radius_modal_px": 14
+  },
+  "typography": {
+    "font_family": "Inter",
+    "fallback": "Segoe UI",
+    "h1": {
+      "size": 24,
+      "weight": 700
+    },
+    "h2": {
+      "size": 20,
+      "weight": 700
+    },
+    "h3": {
+      "size": 16,
+      "weight": 600
+    },
+    "body": {
+      "size": 14,
+      "weight": 400
+    },
+    "small": {
+      "size": 12,
+      "weight": 400
+    }
+  },
+  "shortcuts": {
+    "new_prescription": "Ctrl+N",
+    "save": "Ctrl+S",
+    "print": "Ctrl+P",
+    "search": "Ctrl+K",
+    "add_medicine": "Enter",
+    "close": "Esc",
+    "delete_selected": "Delete"
+  },
+  "print": {
+    "paper": "A4",
+    "show_sexe": false,
+    "show_age_only_when_not_null": true,
+    "age_label": "A",
+    "include_doctor_header": true,
+    "include_signature": false,
+    "include_stamp": false,
+    "include_doctor_contact": true
+  }
+}
