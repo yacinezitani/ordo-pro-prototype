@@ -1175,7 +1175,8 @@ kbd {
   gap: 6px;
 }
 
-.pathology-tag {
+.pathology-tag,
+.med-meta-tag {
   background-color: #F1F5F9;
   padding: 3px 8px;
   border-radius: 4px;
