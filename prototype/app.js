@@ -1256,17 +1256,26 @@ function saveCustomMedicine() {
 
 let editingPatientId = null;
 
-function openNewPatientModal() {
+function openNewPatientModal(initialName = '') {
   editingPatientId = null;
   const title = document.getElementById('modal-patient-title');
   if (title) title.textContent = 'Nouveau patient';
   const btn = document.getElementById('btn-save-patient');
   if (btn) btn.textContent = 'Créer le patient';
 
-  document.getElementById('new-patient-nom').value = '';
-  document.getElementById('new-patient-age').value = '';
-  document.getElementById('new-patient-sexe').value = '';
+  const nomInput = document.getElementById('new-patient-nom');
+  if (nomInput) nomInput.value = initialName || '';
+  const ageInput = document.getElementById('new-patient-age');
+  if (ageInput) ageInput.value = '';
+  const sexeInput = document.getElementById('new-patient-sexe');
+  if (sexeInput) sexeInput.value = '';
   openModal('modal-new-patient');
+  setTimeout(() => {
+    if (nomInput) {
+      nomInput.focus();
+      if (initialName) nomInput.select();
+    }
+  }, 100);
 }
 
 function openEditPatientModal(patientId) {
@@ -1365,24 +1374,103 @@ function deletePatient(patientId) {
   }
 }
 
-// Patient Selector Modal
+// Patient Selector Modal with Real-time Search
 function openPatientSelectorModal() {
+  const searchInput = document.getElementById('patient-modal-search');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+  filterPatientSelectorList('');
+  openModal('modal-select-patient');
+  setTimeout(() => {
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  }, 100);
+}
+
+function clearPatientModalSearch() {
+  const searchInput = document.getElementById('patient-modal-search');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  filterPatientSelectorList('');
+}
+
+function handlePatientModalSearchKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const firstItem = document.querySelector('#patient-selector-list .patient-picker-item');
+    if (firstItem) {
+      firstItem.click();
+    } else {
+      const q = (e.target.value || '').trim();
+      if (q) {
+        closeModal('modal-select-patient');
+        openNewPatientModal(q);
+      }
+    }
+  } else if (e.key === 'Escape') {
+    closeModal('modal-select-patient');
+  }
+}
+
+function filterPatientSelectorList(query = '') {
   const listContainer = document.getElementById('patient-selector-list');
-  if (listContainer) {
-    listContainer.innerHTML = AppState.patients.map(p => `
-      <div class="autocomplete-item" onclick="selectPatientById(${p.id})">
+  const countEl = document.getElementById('patient-modal-count');
+  const clearBtn = document.getElementById('patient-modal-search-clear');
+  if (!listContainer) return;
+
+  const rawQ = (query || '').trim();
+  const q = rawQ.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (clearBtn) {
+    clearBtn.style.display = rawQ ? 'block' : 'none';
+  }
+
+  const filtered = AppState.patients.filter(p => {
+    if (!q) return true;
+    const nom = (p.nomComplet || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const ageStr = p.age !== null && p.age !== undefined ? String(p.age) : '';
+    const sexeStr = (p.sexe || '').toLowerCase();
+    return nom.includes(q) || ageStr.includes(q) || sexeStr.includes(q);
+  });
+
+  if (countEl) {
+    countEl.textContent = `${filtered.length} patient${filtered.length > 1 ? 's' : ''}`;
+  }
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="36" height="36" style="margin: 0 auto 10px auto; display: block; opacity: 0.45;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: var(--text-primary);">Aucun patient trouvé</p>
+        <p style="margin: 0 0 14px 0; font-size: 12.5px; color: var(--text-muted);">Aucun dossier ne correspond à « ${escapeHtml(rawQ)} »</p>
+        <button class="btn btn-primary btn-sm" onclick="closeModal('modal-select-patient'); openNewPatientModal('${escapeHtml(rawQ)}');">
+          + Créer « ${escapeHtml(rawQ)} »
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = filtered.map(p => {
+    const ageDisplay = (p.age !== null && p.age !== undefined && p.age !== '') ? `(A : ${p.age} ans)` : `(Adulte)`;
+    return `
+      <div class="patient-picker-item" onclick="selectPatientById(${p.id})">
         <div>
           <span class="item-name">${escapeHtml(p.nomComplet)}</span>
-          ${p.age !== null ? `<span class="patient-badge-age">(A : ${p.age} ans)</span>` : ''}
+          <span class="patient-badge-age" style="margin-left: 6px; font-weight: 500;">${escapeHtml(ageDisplay)}</span>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
           ${p.sexe ? `<span class="badge-sexe ${p.sexe === 'Homme' ? 'badge-homme' : 'badge-femme'}">${p.sexe}</span>` : ''}
-          <span style="font-size: 11.5px; color: var(--text-muted); margin-left: 8px;">Dernière: ${p.derniereOrdo || 'Nouveau'}</span>
+          <span style="font-size: 11.5px; color: var(--text-muted);">Dernière: ${p.derniereOrdo || 'Nouveau'}</span>
         </div>
       </div>
-    `).join('');
-  }
-  openModal('modal-select-patient');
+    `;
+  }).join('');
 }
 
 function selectPatientById(id) {
@@ -3244,11 +3332,14 @@ function setupKeyboardShortcuts() {
       return;
     }
 
-    // Ctrl+K: Global search focus
+    // Ctrl+K: Focus medicine search input
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      const globalSearch = document.getElementById('global-search-input');
-      if (globalSearch) globalSearch.focus();
+      const medSearch = document.getElementById('medicine-search-input');
+      if (medSearch) {
+        medSearch.focus();
+        medSearch.select();
+      }
       return;
     }
   });
