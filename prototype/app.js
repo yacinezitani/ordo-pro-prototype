@@ -2854,7 +2854,7 @@ function generateEvaluatedCertText(templateString, cert) {
 
   // Patient vars
   text = text.replace(/\{\{patient\.nom\}\}/g, p.nomComplet || '');
-  text = text.replace(/\{\{patient\.age\}\}/g, p.age !== null && p.age !== undefined ? p.age : '');
+  text = text.replace(/\{\{patient\.age\}\}/g, formatPatientAge(p.age));
   text = text.replace(/\{\{patient\.sexe\}\}/g, p.sexe || '');
 
   // Doctor vars
@@ -2927,11 +2927,9 @@ function renderCertificateA4Preview() {
   const doc = AppState.doctor;
   const p = cert.patient || { nomComplet: 'Nom du patient non spécifié', age: null };
 
-  // Patient block rules (Spec #21):
-  // Nom, Age only if not null, SEX NEVER PRINTED
-  const ageDisplay = (p.age !== null && p.age !== undefined)
-    ? `<div class="a4-patient-age">A : ${p.age} ans</div>`
-    : '';
+  // Patient block rules:
+  // Nom, Âge : si renseigné (ex: 40 ans), sinon 'Adulte'
+  const ageDisplay = `<div class="a4-patient-age">Âge : ${escapeHtml(formatPatientAge(p.age))}</div>`;
 
   sheet.innerHTML = `
     <!-- Top Doctor Cabinet Header (Algerian Bilingual FR/AR) -->
@@ -2988,7 +2986,7 @@ function renderCertificateA4Preview() {
     </div>
 
     <!-- Cabinet Footer -->
-    <div class="a4-footer" style="margin-top: 24px;">
+    <div class="a4-footer" style="margin-top: 14px;">
       <div>${escapeHtml(doc.address)}</div>
       <div>Tél : ${escapeHtml(doc.phone)}</div>
     </div>
@@ -3059,7 +3057,7 @@ function deleteRecentCertificate(certId) {
   }
 }
 
-// Trigger printable certificate document (Format A4)
+// Trigger printable certificate document (Format A5 Médical)
 function triggerCertificatePrint() {
   let styleEl = document.getElementById('dynamic-print-page-style');
   if (!styleEl) {
@@ -3067,13 +3065,12 @@ function triggerCertificatePrint() {
     styleEl.id = 'dynamic-print-page-style';
     document.head.appendChild(styleEl);
   }
-  styleEl.textContent = '@page { size: A4 portrait; margin: 12mm 15mm; }';
+  styleEl.textContent = '@page { size: A5 portrait; margin: 6mm 8mm; }';
 
   document.body.classList.add('printing-certificate');
   window.print();
   setTimeout(() => {
     document.body.classList.remove('printing-certificate');
-    styleEl.textContent = '@page { size: A5 portrait; margin: 6mm 8mm; }';
   }, 1000);
 }
 
@@ -3328,7 +3325,11 @@ function setupKeyboardShortcuts() {
     // Ctrl+P: Imprimer
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
       e.preventDefault();
-      triggerPrint();
+      if (AppState.currentView === 'certificates' && document.getElementById('cert-editor-view') && document.getElementById('cert-editor-view').style.display !== 'none') {
+        triggerCertificatePrint();
+      } else {
+        triggerPrint();
+      }
       return;
     }
 

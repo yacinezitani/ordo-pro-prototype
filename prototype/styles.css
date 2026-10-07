@@ -2637,70 +2637,70 @@ kbd {
   max-width: 92vw;
 }
 
-/* A4 Certificate Sheet Elements */
+/* A5 Certificate Sheet Elements */
 .cert-a4-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: #0F2F57;
-  margin: 20px 0 16px 0;
+  margin: 14px 0 10px 0;
   border-bottom: 1.5px solid #0F2F57;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   font-family: var(--font-family);
 }
 
 .cert-a4-body {
-  font-size: 13.5px;
-  line-height: 1.8;
+  font-size: 13px;
+  line-height: 1.7;
   color: #1E293B;
-  margin: 20px 0;
-  min-height: 220px;
+  margin: 14px 0;
+  min-height: 140px;
   white-space: pre-wrap;
   font-family: var(--font-serif), Georgia, serif;
 }
 
 .cert-a4-closing {
-  font-size: 12px;
+  font-size: 11.5px;
   font-style: italic;
   color: #475569;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .cert-a4-date-location {
   text-align: right;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #0F2F57;
-  margin: 20px 0 12px 0;
+  margin: 14px 0 10px 0;
 }
 
 .cert-a4-signature-box {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .cert-signature-area {
-  width: 220px;
+  width: 200px;
   border: 1px dashed #CBD5E1;
   border-radius: 6px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   text-align: center;
   background: #F8FAFC;
 }
 
 .cert-signature-label {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
-  margin-bottom: 42px;
+  margin-bottom: 32px;
 }
 
 .cert-signature-doc {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #0F2F57;
 }
@@ -2826,6 +2826,48 @@ kbd {
 
   body.printing-certificate #cert-a4-sheet-container {
     transform: none !important;
+  }
+
+  body.printing-certificate .cert-a4-title {
+    margin: 8px 0 6px 0 !important;
+    padding-bottom: 4px !important;
+    font-size: 13.5px !important;
+    letter-spacing: 1px !important;
+  }
+
+  body.printing-certificate .cert-a4-body {
+    font-size: 11.5px !important;
+    line-height: 1.55 !important;
+    margin: 10px 0 !important;
+    min-height: 90px !important;
+  }
+
+  body.printing-certificate .cert-a4-closing {
+    font-size: 10px !important;
+    margin-top: 6px !important;
+  }
+
+  body.printing-certificate .cert-a4-date-location {
+    font-size: 10.5px !important;
+    margin: 8px 0 6px 0 !important;
+  }
+
+  body.printing-certificate .cert-a4-signature-box {
+    margin-top: 6px !important;
+  }
+
+  body.printing-certificate .cert-signature-area {
+    width: 180px !important;
+    padding: 6px 10px !important;
+  }
+
+  body.printing-certificate .cert-signature-label {
+    font-size: 9px !important;
+    margin-bottom: 24px !important;
+  }
+
+  body.printing-certificate .cert-signature-doc {
+    font-size: 10.5px !important;
   }
 
   .a4-sheet {
