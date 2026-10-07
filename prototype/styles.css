@@ -1050,11 +1050,26 @@ kbd {
   min-height: 180px;
 }
 
+.prescription-table-cols {
+  display: grid;
+  grid-template-columns: 1.8fr 2.4fr 1.1fr 90px;
+  gap: 10px;
+  padding: 8px 16px;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .medicine-row {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 90px;
-  align-items: center;
-  padding: 12px 16px;
+  grid-template-columns: 1.8fr 2.4fr 1.1fr 90px;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border-subtle);
   transition: background var(--transition-fast);
 }
@@ -1063,10 +1078,93 @@ kbd {
   background-color: var(--surface-hover);
 }
 
+.row-medicine-num-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.row-med-idx {
+  font-weight: 800;
+  color: var(--primary-600);
+  font-size: 13.5px;
+}
+
 .row-medicine-name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+
+.posology-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.row-posology-input {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: #FFFFFF;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.row-posology-input:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+  outline: none;
+}
+
+.row-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.quick-chip {
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  border-radius: var(--radius-pill);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  line-height: 1.2;
+}
+
+.quick-chip:hover {
+  background-color: #E0F2FE;
+  border-color: #BAE6FD;
+  color: #0284C7;
+}
+
+.row-boite-input {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-700);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: #FFFFFF;
+  text-align: center;
+  margin-top: 1px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.row-boite-input:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+  outline: none;
 }
 
 .row-pathology {
@@ -1086,17 +1184,12 @@ kbd {
   font-weight: 500;
 }
 
-.row-quantity {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--primary-700);
-}
-
 .row-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .btn-action-icon {
@@ -1383,12 +1476,12 @@ kbd {
   color: #475569;
 }
 
-/* Patient & Date Meta Block (Spec #21) */
+/* Patient & Date Meta Block */
 .a4-meta-block {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   padding: 8px 12px;
   background-color: #F8FAFC;
   border-radius: 6px;
@@ -1398,13 +1491,21 @@ kbd {
 .a4-patient-meta {
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 
-.a4-patient-label {
-  font-size: 10px;
+.a4-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.a4-meta-label {
+  font-size: 11px;
   color: #64748B;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .a4-patient-name {
@@ -1413,33 +1514,40 @@ kbd {
   color: #0F172A;
 }
 
-/* Note: Spec #21, #1: Sexe is NEVER printed! Age format: 'A : {age} ans' */
 .a4-patient-age {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #334155;
-  margin-top: 1px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0F172A;
 }
 
 .a4-date-block {
   text-align: right;
 }
 
+.a4-date-label {
+  font-size: 11px;
+  color: #64748B;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
 .a4-date-text {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #1E293B;
+  margin-top: 2px;
 }
 
 /* Title ORDONNANCE */
 .a4-document-title {
   text-align: center;
   font-family: var(--font-serif);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 3px;
   color: #0F2F57;
-  margin: 10px 0 18px 0;
+  margin: 8px 0 16px 0;
   position: relative;
 }
 
@@ -1457,52 +1565,68 @@ kbd {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .a4-prescription-item {
-  padding-left: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #E2E8F0;
 }
 
-.a4-med-header {
+.a4-prescription-item:last-child {
+  border-bottom: none;
+}
+
+.a4-item-line-1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.a4-item-med {
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
 
 .a4-item-number {
+  font-weight: 800;
+  font-size: 13px;
+  color: #0284C7;
+}
+
+.a4-item-name {
   font-weight: 700;
-  font-size: 12.5px;
+  font-size: 13.5px;
   color: #0F2F57;
 }
 
-.a4-med-name {
+.a4-item-boite {
   font-weight: 700;
   font-size: 13px;
-  color: #0F172A;
+  color: #0F2F57;
+  white-space: nowrap;
+  text-align: right;
+  letter-spacing: 0.2px;
 }
 
-.a4-med-details {
-  display: flex;
-  justify-content: space-between;
-  margin-left: 18px;
+.a4-item-line-2 {
   margin-top: 3px;
-  font-size: 11px;
-  color: #475569;
+  padding-left: 20px;
 }
 
-.a4-pathology-print {
+.a4-item-posology {
+  font-size: 12.5px;
+  color: #334155;
+  font-weight: 500;
   font-style: italic;
-}
-
-.a4-qty-print {
-  font-weight: 700;
-  color: #0F172A;
+  display: block;
 }
 
 /* Space reserved for doctor manual physical ink stamp & pen signature on printed paper */
 .a4-signature-space {
-  min-height: 60px;
+  min-height: 50px;
   flex-shrink: 0;
 }
 
@@ -2599,13 +2723,13 @@ kbd {
 }
 
 /* ==========================================================================
-   Print-Specific Stylesheet (A4 Physical Print Spec #21, #23)
+   Print-Specific Stylesheet (A5 Physical Print for Medical Prescriptions)
    ========================================================================== */
 
 @media print {
   @page {
-    size: A4 portrait;
-    margin: 15mm 20mm;
+    size: A5 portrait;
+    margin: 6mm 8mm;
   }
 
   body, html {
@@ -2685,16 +2809,75 @@ kbd {
 
   .a4-sheet {
     max-width: 100% !important;
+    width: 100% !important;
     min-height: auto !important;
     box-shadow: none !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .a4-header {
+    border-bottom: 1.5px solid #0F2F57 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 8px !important;
   }
 
   .a4-meta-block {
     background-color: transparent !important;
     border: 1px solid #CBD5E1 !important;
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .a4-document-title {
+    margin: 6px 0 10px 0 !important;
+    font-size: 15px !important;
+    letter-spacing: 3px !important;
+  }
+
+  .a4-document-title::after {
+    margin: 4px auto 0 auto !important;
+  }
+
+  .a4-prescriptions-body {
+    gap: 8px !important;
+    flex: 1 !important;
+  }
+
+  .a4-prescription-item {
+    padding-bottom: 6px !important;
+    margin-bottom: 6px !important;
+    border-bottom: 1px dashed #CBD5E1 !important;
+  }
+
+  .a4-item-num {
+    font-size: 11.5px !important;
+  }
+
+  .a4-item-name {
+    font-size: 12px !important;
+  }
+
+  .a4-item-boite {
+    font-size: 11.5px !important;
+  }
+
+  .a4-item-posology {
+    font-size: 11px !important;
+  }
+
+  .a4-signature-space {
+    min-height: 40px !important;
+    height: 40px !important;
+  }
+
+  .a4-footer {
+    padding-top: 6px !important;
+    margin-top: 8px !important;
+    font-size: 9.5px !important;
   }
 
   .a4-bottom-stamp-row,

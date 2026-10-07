@@ -18,11 +18,11 @@ class Patient {
     this.derniereOrdonnance,
   });
 
-  /// Formatted age for printed document according to Spec V3
-  /// Returns null if age is null, ensuring nothing is printed about age.
-  String? get printedAge {
-    if (age == null) return null;
-    return 'A : $age ans';
+  /// Formatted age for printed document according to OrdoPro specs:
+  /// Returns '$age ans' if age is specified, otherwise returns 'Adulte'.
+  String get printedAge {
+    if (age == null) return 'Adulte';
+    return '$age ans';
   }
 
   Patient copyWith({

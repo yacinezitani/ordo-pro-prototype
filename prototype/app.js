@@ -4,6 +4,47 @@
  * Strictly conforms to OrdoPro_UI_UX_Design_Spec_V3.md & OrdoPro_Design_Tokens_V3.json
  */
 
+/**
+ * Helper: Format boîtes / conditionnement
+ * - If number 1 -> "01 boîte"
+ * - If number 2 -> "02 boîtes"
+ * - Default: "01 boîte"
+ * - Saisie libre acceptée et préservée (ex: "1 flacon", "QSP 1 mois")
+ */
+function formatBoites(val) {
+  if (val === null || val === undefined || String(val).trim() === '') {
+    return '01 boîte';
+  }
+  const str = String(val).trim();
+  if (/^\d+$/.test(str)) {
+    const num = parseInt(str, 10);
+    const padded = num < 10 ? `0${num}` : `${num}`;
+    return `${padded} boîte${num > 1 ? 's' : ''}`;
+  }
+  const match = str.match(/^(\d+)\s*bo[iî]tes?$/i);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    const padded = num < 10 ? `0${num}` : `${num}`;
+    return `${padded} boîte${num > 1 ? 's' : ''}`;
+  }
+  return str;
+}
+
+/**
+ * Helper: Format patient age for ordonnance
+ * - Si renseigné -> sort tel quel (ex: "40 ans", "8 mois")
+ * - Si non renseigné (vide ou null) -> sort le mot "Adulte"
+ */
+function formatPatientAge(age) {
+  if (age === null || age === undefined) return 'Adulte';
+  const str = String(age).trim();
+  if (str === '' || str === '0') return 'Adulte';
+  if (/^\d+$/.test(str)) {
+    return `${str} ans`;
+  }
+  return str;
+}
+
 // Application State
 const AppState = {
   currentView: 'home', // 'home' | 'prescription' | 'patients' | 'presets' | 'certificates' | 'medicines'
@@ -34,15 +75,15 @@ const AppState = {
     id: 'ord-current',
     date: '05/10/2026',
     medicines: [
-      { id: 1, nom: 'Doliprane 1000 mg', pathologie: 'Fièvre', quantite: 20 },
-      { id: 2, nom: 'Amoxicilline 1 g', pathologie: 'Infection', quantite: 14 },
-      { id: 3, nom: 'Oméprazole 20 mg', pathologie: 'Gastrite', quantite: 7 }
+      { id: 1, nom: 'Doliprane 1000 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+      { id: 2, nom: 'Amoxicilline 1 g', posologie: '1 sachet 2 fois par jour', boites: '02 boîtes' },
+      { id: 3, nom: 'Oméprazole 20 mg', posologie: '1 gélule le matin à jeun', boites: '01 boîte' }
     ]
   },
 
-  // Print & Document Generation Settings (Spec #21, #22)
+  // Print & Document Generation Settings (Spec #21, #22) - Format A5 médical standard
   printSettings: {
-    paper: 'A4',
+    paper: 'A5',
     includeSignature: false,
     includeStamp: false
   },
@@ -64,9 +105,9 @@ const AppState = {
       patientId: 1,
       date: '05/10/2026',
       medicines: [
-        { nom: 'Doliprane 1000 mg', pathologie: 'Fièvre', quantite: 20 },
-        { nom: 'Amoxicilline 1 g', pathologie: 'Infection', quantite: 14 },
-        { nom: 'Oméprazole 20 mg', pathologie: 'Gastrite', quantite: 7 }
+        { nom: 'Doliprane 1000 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+        { nom: 'Amoxicilline 1 g', posologie: '1 sachet matin et soir', boites: '02 boîtes' },
+        { nom: 'Oméprazole 20 mg', posologie: '1 gélule le matin à jeun', boites: '01 boîte' }
       ]
     },
     {
@@ -74,10 +115,10 @@ const AppState = {
       patientId: 1,
       date: '21/09/2026',
       medicines: [
-        { nom: 'Doliprane 1000 mg', pathologie: 'Céphalées', quantite: 20 },
-        { nom: 'Spasfon', pathologie: 'Douleurs abdominales', quantite: 30 },
-        { nom: 'Flagyl 500 mg', pathologie: 'Colite', quantite: 20 },
-        { nom: 'Oméprazole 20 mg', pathologie: 'Reflux', quantite: 14 }
+        { nom: 'Doliprane 1000 mg', posologie: '1 cp si douleur / céphalées', boites: '01 boîte' },
+        { nom: 'Spasfon', posologie: '2 cp en cas de spasmes abdominaux', boites: '01 boîte' },
+        { nom: 'Flagyl 500 mg', posologie: '1 cp 3 fois par jour pendant 7 jours', boites: '02 boîtes' },
+        { nom: 'Oméprazole 20 mg', posologie: '1 gélule le soir', boites: '01 boîte' }
       ]
     },
     {
@@ -85,8 +126,8 @@ const AppState = {
       patientId: 1,
       date: '10/08/2026',
       medicines: [
-        { nom: 'Doliprane 500 mg', pathologie: 'Fièvre', quantite: 16 },
-        { nom: 'Zyrtec 10 mg', pathologie: 'Rhinite allergique', quantite: 10 }
+        { nom: 'Doliprane 500 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+        { nom: 'Zyrtec 10 mg', posologie: '1 cp le soir au coucher', boites: '01 boîte' }
       ]
     }
   ],
@@ -98,9 +139,9 @@ const AppState = {
       nom: 'Fièvre & Syndrome Grippal',
       pathologieDefaut: 'Fièvre / Courbatures',
       medicines: [
-        { nom: 'Doliprane 1000 mg', pathologie: 'Fièvre', quantite: 20 },
-        { nom: 'Spasfon', pathologie: 'Douleurs', quantite: 30 },
-        { nom: 'Zyrtec 10 mg', pathologie: 'Rhinorrhée', quantite: 10 }
+        { nom: 'Doliprane 1000 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+        { nom: 'Spasfon', posologie: '2 cp en cas de douleurs', boites: '01 boîte' },
+        { nom: 'Zyrtec 10 mg', posologie: '1 cp le soir au coucher', boites: '01 boîte' }
       ]
     },
     {
@@ -108,9 +149,9 @@ const AppState = {
       nom: 'Infection Respiratoire Haute',
       pathologieDefaut: 'Infection bactérienne',
       medicines: [
-        { nom: 'Augmentin 1 g/125 mg', pathologie: 'Infection', quantite: 14 },
-        { nom: 'Doliprane 1000 mg', pathologie: 'Fièvre / Douleur', quantite: 20 },
-        { nom: 'Célestène 2 mg', pathologie: 'Inflammation oropharyngée', quantite: 10 }
+        { nom: 'Augmentin 1 g/125 mg', posologie: '1 cp matin et soir au milieu des repas', boites: '02 boîtes' },
+        { nom: 'Doliprane 1000 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+        { nom: 'Célestène 2 mg', posologie: '1 cp le matin dissous dans de l\'eau', boites: '01 boîte' }
       ]
     },
     {
@@ -118,8 +159,8 @@ const AppState = {
       nom: 'Gastrite & Reflux Gastro-Œsophagien',
       pathologieDefaut: 'Gastrite / RGO',
       medicines: [
-        { nom: 'Oméprazole 20 mg', pathologie: 'Gastrite', quantite: 28 },
-        { nom: 'Spasfon', pathologie: 'Spasmes gastriques', quantite: 30 }
+        { nom: 'Oméprazole 20 mg', posologie: '1 gélule le matin à jeun pendant 4 semaines', boites: '01 boîte' },
+        { nom: 'Spasfon', posologie: '2 cp en cas de spasmes gastriques', boites: '01 boîte' }
       ]
     },
     {
@@ -127,29 +168,29 @@ const AppState = {
       nom: 'Lumbago / Douleurs Ostéoarticulaires',
       pathologieDefaut: 'Lumbago aigu',
       medicines: [
-        { nom: 'Voltarène 50 mg', pathologie: 'Inflammation & Douleur', quantite: 20 },
-        { nom: 'Doliprane 1000 mg', pathologie: 'Douleur', quantite: 20 },
-        { nom: 'Oméprazole 20 mg', pathologie: 'Protection gastrique', quantite: 14 }
+        { nom: 'Voltarène 50 mg', posologie: '1 cp midi et soir au cours du repas', boites: '01 boîte' },
+        { nom: 'Doliprane 1000 mg', posologie: '1 cp 3 fois par jour', boites: '01 boîte' },
+        { nom: 'Oméprazole 20 mg', posologie: '1 gélule le matin pour protection gastrique', boites: '01 boîte' }
       ]
     }
   ],
 
   // Medicine Formulary Database (Spec #19)
   medicinesDb: [
-    { id: 'm1', nom: 'Doliprane 1000 mg', dci: 'Paracétamol', pathologieDefaut: 'Fièvre', quantiteDefaut: 20 },
-    { id: 'm2', nom: 'Doliprane 500 mg', dci: 'Paracétamol', pathologieDefaut: 'Fièvre', quantiteDefaut: 16 },
-    { id: 'm3', nom: 'Amoxicilline 1 g', dci: 'Amoxicilline', pathologieDefaut: 'Infection', quantiteDefaut: 14 },
-    { id: 'm4', nom: 'Augmentin 1 g/125 mg', dci: 'Amoxicilline / Acide clavulanique', pathologieDefaut: 'Infection bactérienne', quantiteDefaut: 14 },
-    { id: 'm5', nom: 'Oméprazole 20 mg', dci: 'Oméprazole', pathologieDefaut: 'Gastrite', quantiteDefaut: 28 },
-    { id: 'm6', nom: 'Spasfon', dci: 'Phloroglucinol', pathologieDefaut: 'Douleurs abdominales', quantiteDefaut: 30 },
-    { id: 'm7', nom: 'Voltarène 50 mg', dci: 'Diclofénac sodique', pathologieDefaut: 'Lumbago / Arthralgies', quantiteDefaut: 20 },
-    { id: 'm8', nom: 'Célestène 2 mg', dci: 'Bétaméthasone', pathologieDefaut: 'Inflammation', quantiteDefaut: 10 },
-    { id: 'm9', nom: 'Zyrtec 10 mg', dci: 'Cétirizine', pathologieDefaut: 'Rhinite allergique', quantiteDefaut: 10 },
-    { id: 'm10', nom: 'Inexium 40 mg', dci: 'Ésoméprazole', pathologieDefaut: 'Reflux gastro-œsophagien', quantiteDefaut: 28 },
-    { id: 'm11', nom: 'Flagyl 500 mg', dci: 'Métronidazole', pathologieDefaut: 'Infection amibienne / dentaire', quantiteDefaut: 20 },
-    { id: 'm12', nom: 'Azithromycine 500 mg', dci: 'Azithromycine', pathologieDefaut: 'Infection respiratoire', quantiteDefaut: 3 },
-    { id: 'm13', nom: 'Kardegic 160 mg', dci: 'Acétylsalicylate de DL-lysine', pathologieDefaut: 'Prévention cardiovasculaire', quantiteDefaut: 30 },
-    { id: 'm14', nom: 'Ventoline 100 µg', dci: 'Salbutamol', pathologieDefaut: 'Crise d\'asthme', quantiteDefaut: 1 }
+    { id: 'm1', nom: 'Doliprane 1000 mg', dci: 'Paracétamol', posologieDefaut: '1 cp 3 fois par jour', boitesDefaut: '01 boîte' },
+    { id: 'm2', nom: 'Doliprane 500 mg', dci: 'Paracétamol', posologieDefaut: '1 cp 3 fois par jour', boitesDefaut: '01 boîte' },
+    { id: 'm3', nom: 'Amoxicilline 1 g', dci: 'Amoxicilline', posologieDefaut: '1 sachet 2 fois par jour', boitesDefaut: '02 boîtes' },
+    { id: 'm4', nom: 'Augmentin 1 g/125 mg', dci: 'Amoxicilline / Acide clavulanique', posologieDefaut: '1 cp matin et soir au milieu des repas', boitesDefaut: '02 boîtes' },
+    { id: 'm5', nom: 'Oméprazole 20 mg', dci: 'Oméprazole', posologieDefaut: '1 gélule le matin à jeun', boitesDefaut: '01 boîte' },
+    { id: 'm6', nom: 'Spasfon', dci: 'Phloroglucinol', posologieDefaut: '2 cp en cas de douleurs', boitesDefaut: '01 boîte' },
+    { id: 'm7', nom: 'Voltarène 50 mg', dci: 'Diclofénac sodique', posologieDefaut: '1 cp midi et soir au cours du repas', boitesDefaut: '01 boîte' },
+    { id: 'm8', nom: 'Célestène 2 mg', dci: 'Bétaméthasone', posologieDefaut: '1 cp le matin dissous dans de l\'eau', boitesDefaut: '01 boîte' },
+    { id: 'm9', nom: 'Zyrtec 10 mg', dci: 'Cétirizine', posologieDefaut: '1 cp le soir au coucher', boitesDefaut: '01 boîte' },
+    { id: 'm10', nom: 'Inexium 40 mg', dci: 'Ésoméprazole', posologieDefaut: '1 cp le matin à jeun pendant 4 semaines', boitesDefaut: '01 boîte' },
+    { id: 'm11', nom: 'Flagyl 500 mg', dci: 'Métronidazole', posologieDefaut: '1 cp 3 fois par jour au cours des repas', boitesDefaut: '02 boîtes' },
+    { id: 'm12', nom: 'Azithromycine 500 mg', dci: 'Azithromycine', posologieDefaut: '1 cp par jour pendant 3 jours', boitesDefaut: '01 boîte' },
+    { id: 'm13', nom: 'Kardegic 160 mg', dci: 'Acétylsalicylate de DL-lysine', posologieDefaut: '1 sachet par jour au déjeuner', boitesDefaut: '01 boîte' },
+    { id: 'm14', nom: 'Ventoline 100 µg', dci: 'Salbutamol', posologieDefaut: '1 à 2 bouffées en cas de crise', boitesDefaut: '01 flacon' }
   ],
 
   // Certificate Templates (Spec #20 & Complete Workflow)
@@ -356,6 +397,40 @@ function loadFromStorage() {
       if (saved.medicinesDb) AppState.medicinesDb = saved.medicinesDb;
       if (saved.certificateTemplates) AppState.certificateTemplates = saved.certificateTemplates;
       if (saved.recentCertificates) AppState.recentCertificates = saved.recentCertificates;
+    }
+
+    // Auto-migration for Posologie & Conditionnement (Boîtes)
+    if (AppState.activePrescription && AppState.activePrescription.medicines) {
+      AppState.activePrescription.medicines.forEach(m => {
+        if (!m.posologie) m.posologie = m.pathologie || '1 cp 3 fois par jour';
+        if (!m.boites) m.boites = m.quantite ? formatBoites(m.quantite) : '01 boîte';
+      });
+    }
+    if (AppState.previousPrescriptions) {
+      AppState.previousPrescriptions.forEach(p => {
+        if (p.medicines) {
+          p.medicines.forEach(m => {
+            if (!m.posologie) m.posologie = m.pathologie || '1 cp 3 fois par jour';
+            if (!m.boites) m.boites = m.quantite ? formatBoites(m.quantite) : '01 boîte';
+          });
+        }
+      });
+    }
+    if (AppState.treatmentPresets) {
+      AppState.treatmentPresets.forEach(preset => {
+        if (preset.medicines) {
+          preset.medicines.forEach(m => {
+            if (!m.posologie) m.posologie = m.pathologie || '1 cp 3 fois par jour';
+            if (!m.boites) m.boites = m.quantite ? formatBoites(m.quantite) : '01 boîte';
+          });
+        }
+      });
+    }
+    if (AppState.medicinesDb) {
+      AppState.medicinesDb.forEach(m => {
+        if (!m.posologieDefaut) m.posologieDefaut = m.pathologieDefaut || '1 cp 3 fois par jour';
+        if (!m.boitesDefaut) m.boitesDefaut = m.quantiteDefaut ? formatBoites(m.quantiteDefaut) : '01 boîte';
+      });
     }
   } catch (err) {
     console.warn('Storage load error:', err);
@@ -579,29 +654,98 @@ function renderMedicineRows() {
 
   if (emptyState) emptyState.style.display = 'none';
 
-  container.innerHTML = meds.map((med, index) => `
-    <div class="medicine-row" data-index="${index}">
-      <div class="row-medicine-name">${index + 1}. ${escapeHtml(med.nom)}</div>
-      <div class="row-pathology">
-        <span class="pathology-tag">${escapeHtml(med.pathologie || 'Non spécifiée')}</span>
+  container.innerHTML = meds.map((med, index) => {
+    const posologyVal = med.posologie || med.pathologie || '1 cp 3 fois par jour';
+    const boiteVal = med.boites || (med.quantite ? formatBoites(med.quantite) : '01 boîte');
+    return `
+      <div class="medicine-row" data-index="${index}">
+        <div class="row-col-medicine">
+          <div class="row-medicine-num-name">
+            <span class="row-med-idx">${index + 1}.</span>
+            <span class="row-medicine-name">${escapeHtml(med.nom)}</span>
+          </div>
+        </div>
+        <div class="row-col-posology">
+          <div class="posology-input-wrapper">
+            <input 
+              type="text" 
+              class="row-posology-input" 
+              value="${escapeHtml(posologyVal)}" 
+              placeholder="ex: 1 cp 3 fois par jour, Qsp 08 jours..." 
+              title="Posologie modifiable (ex: Qsp 08 jours)"
+              oninput="updateMedicinePosology(${index}, this.value)"
+            >
+            <div class="row-quick-chips">
+              <button type="button" class="quick-chip" onclick="setPosologyQuick(${index}, '1 cp 3 fois par jour')">1 cp x 3/j</button>
+              <button type="button" class="quick-chip" onclick="setPosologyQuick(${index}, '1 cp matin et soir')">Matin & Soir</button>
+              <button type="button" class="quick-chip" onclick="setPosologyQuick(${index}, 'Qsp 08 jours')">Qsp 08 jours</button>
+              <button type="button" class="quick-chip" onclick="setPosologyQuick(${index}, 'Qsp 01 mois')">Qsp 01 mois</button>
+            </div>
+          </div>
+        </div>
+        <div class="row-col-boite">
+          <input 
+            type="text" 
+            class="row-boite-input" 
+            value="${escapeHtml(boiteVal)}" 
+            placeholder="01 boîte" 
+            title="Conditionnement / Boîtes (saisie libre ou chiffre)"
+            onblur="formatMedicineBoiteOnBlur(${index}, this)"
+            oninput="updateMedicineBoiteQuick(${index}, this.value)"
+          >
+        </div>
+        <div class="row-actions">
+          <button class="btn-action-icon" title="Monter" onclick="moveMedicineUp(${index})" ${index === 0 ? 'disabled style="opacity:0.3; cursor:default;"' : ''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button class="btn-action-icon" title="Descendre" onclick="moveMedicineDown(${index})" ${index === meds.length - 1 ? 'disabled style="opacity:0.3; cursor:default;"' : ''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <button class="btn-action-icon" title="Modifier le médicament" onclick="openEditMedicineModal(${index})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button class="btn-action-icon danger" title="Supprimer de l'ordonnance" onclick="confirmDeleteMedicine(${index})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="row-quantity">${med.quantite}</div>
-      <div class="row-actions">
-        <button class="btn-action-icon" title="Monter" onclick="moveMedicineUp(${index})" ${index === 0 ? 'disabled style="opacity:0.3; cursor:default;"' : ''}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15"><polyline points="18 15 12 9 6 15"/></svg>
-        </button>
-        <button class="btn-action-icon" title="Descendre" onclick="moveMedicineDown(${index})" ${index === meds.length - 1 ? 'disabled style="opacity:0.3; cursor:default;"' : ''}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <button class="btn-action-icon" title="Modifier la ligne" onclick="openEditMedicineModal(${index})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
-        <button class="btn-action-icon danger" title="Supprimer de l'ordonnance" onclick="confirmDeleteMedicine(${index})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        </button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function updateMedicinePosology(index, value) {
+  const med = AppState.activePrescription.medicines[index];
+  if (!med) return;
+  med.posologie = value;
+  saveToStorage();
+  renderA4Preview();
+}
+
+function setPosologyQuick(index, value) {
+  const med = AppState.activePrescription.medicines[index];
+  if (!med) return;
+  med.posologie = value;
+  saveToStorage();
+  renderMedicineRows();
+  renderA4Preview();
+}
+
+function updateMedicineBoiteQuick(index, value) {
+  const med = AppState.activePrescription.medicines[index];
+  if (!med) return;
+  med.boites = value;
+  saveToStorage();
+  renderA4Preview();
+}
+
+function formatMedicineBoiteOnBlur(index, input) {
+  const med = AppState.activePrescription.medicines[index];
+  if (!med) return;
+  const formatted = formatBoites(input.value);
+  med.boites = formatted;
+  input.value = formatted;
+  saveToStorage();
+  renderA4Preview();
 }
 
 function moveMedicineUp(index) {
@@ -719,7 +863,7 @@ function renderAutocomplete(query) {
         <div class="item-name">${escapeHtml(med.nom)}</div>
         <div class="item-dci">DCI: ${escapeHtml(med.dci)}</div>
       </div>
-      <span class="pathology-tag">${escapeHtml(med.pathologieDefaut)} • Qté ${med.quantiteDefaut}</span>
+      <span class="pathology-tag">${escapeHtml(med.posologieDefaut || '1 cp 3 fois par jour')} • ${escapeHtml(med.boitesDefaut || '01 boîte')}</span>
     </div>
   `).join('');
 
@@ -796,21 +940,22 @@ function handleMedicineEnterKey(query) {
 }
 
 function addMedicineFromDb(dbMed) {
-  // Create an independent snapshot copy (Spec #19)
+  // Create an independent snapshot copy (Spec #19 & V3 Posologie & Boîtes)
   AppState.activePrescription.medicines.push({
     id: Date.now() + Math.random(),
     nom: dbMed.nom,
-    pathologie: dbMed.pathologieDefaut || 'Symptomatique',
-    quantite: dbMed.quantiteDefaut || 20
+    posologie: dbMed.posologieDefaut || '1 cp 3 fois par jour',
+    boites: dbMed.boitesDefaut || '01 boîte'
   });
 
+  saveToStorage();
   renderMedicineRows();
   renderA4Preview();
   showToast(`Médicament ajouté : ${dbMed.nom}`);
 }
 
 // ==========================================================================
-// A4 Print & Live Document Renderer (Spec #2, #21, #23)
+// A5 Print & Live Document Renderer (Format Ordonnance Médicale A5)
 // ==========================================================================
 
 function renderA4Preview() {
@@ -821,31 +966,35 @@ function renderA4Preview() {
   const patient = AppState.activePatient;
   const ordo = AppState.activePrescription;
 
-  // Patient block rules (Spec #21):
-  // 1. Nom : Ahmed Benali
-  // 2. Age only if not null: "A : {age} ans"
-  // 3. Sexe : NEVER printed on document!
-  const ageDisplay = (patient && patient.age !== null && patient.age !== undefined) 
-    ? `<div class="a4-patient-age">A : ${patient.age} ans</div>` 
-    : '';
-
+  // Patient block rules:
+  // - Nom et prénom : Ahmed Benali
+  // - Âge : si renseigné sort tel quel (ex: "40 ans", "8 mois"), sinon mot "Adulte"
   const patientName = patient ? patient.nomComplet : 'Nom du patient non spécifié';
+  const patientAgeDisplay = formatPatientAge(patient ? patient.age : null);
 
-  // Prescriptions List
+  // Prescriptions List strictly conforming to Algerian Medical Standard:
+  // Line 1: [idx + 1]. [Nom du médicament] (left) | [Boîtes] (right)
+  // Line 2: [Posologie] (left, indented)
   const itemsHtml = ordo.medicines.length > 0
-    ? ordo.medicines.map((m, idx) => `
-        <div class="a4-prescription-item">
-          <div class="a4-med-header">
-            <span class="a4-item-number">${idx + 1}.</span>
-            <span class="a4-med-name">${escapeHtml(m.nom)}</span>
+    ? ordo.medicines.map((m, idx) => {
+        const boitesText = m.boites || (m.quantite ? formatBoites(m.quantite) : '01 boîte');
+        const posologieText = m.posologie || m.pathologie || '1 cp 3 fois par jour';
+        return `
+          <div class="a4-prescription-item">
+            <div class="a4-item-line-1">
+              <div class="a4-item-med">
+                <span class="a4-item-number">${idx + 1}.</span>
+                <span class="a4-item-name">${escapeHtml(m.nom)}</span>
+              </div>
+              <div class="a4-item-boite">${escapeHtml(boitesText)}</div>
+            </div>
+            <div class="a4-item-line-2">
+              <span class="a4-item-posology">${escapeHtml(posologieText)}</span>
+            </div>
           </div>
-          <div class="a4-med-details">
-            <span class="a4-pathology-print">${escapeHtml(m.pathologie)}</span>
-            <span class="a4-qty-print">Quantité : ${m.quantite}</span>
-          </div>
-        </div>
-      `).join('')
-    : `<div style="text-align: center; color: #94A3B8; margin: 40px 0; font-style: italic;">Aucun médicament prescrit</div>`;
+        `;
+      }).join('')
+    : `<div style="text-align: center; color: #94A3B8; margin: 30px 0; font-style: italic;">Aucun médicament prescrit</div>`;
 
   sheet.innerHTML = `
     <!-- Top Doctor Cabinet Header (Algerian Bilingual FR/AR) -->
@@ -870,12 +1019,17 @@ function renderA4Preview() {
     <!-- Patient & Date Block -->
     <div class="a4-meta-block">
       <div class="a4-patient-meta">
-        <span class="a4-patient-label">Patient</span>
-        <span class="a4-patient-name">${escapeHtml(patientName)}</span>
-        ${ageDisplay}
+        <div class="a4-meta-row">
+          <span class="a4-meta-label">Nom et prénom :</span>
+          <span class="a4-meta-value a4-patient-name">${escapeHtml(patientName)}</span>
+        </div>
+        <div class="a4-meta-row">
+          <span class="a4-meta-label">Âge :</span>
+          <span class="a4-meta-value a4-patient-age">${escapeHtml(patientAgeDisplay)}</span>
+        </div>
       </div>
       <div class="a4-date-block">
-        <span class="a4-patient-label">Alger, le</span>
+        <div class="a4-date-label">Alger, le</div>
         <div class="a4-date-text">${escapeHtml(ordo.date)}</div>
       </div>
     </div>
@@ -899,8 +1053,17 @@ function renderA4Preview() {
   `;
 }
 
-// Print Handler (Spec #21, #24)
+// Print Handler (Format A5 Physical Print)
 function triggerPrint() {
+  let styleEl = document.getElementById('dynamic-print-page-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamic-print-page-style';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = '@page { size: A5 portrait; margin: 6mm 8mm; }';
+
+  document.body.classList.remove('printing-certificate');
   window.print();
 }
 
@@ -937,8 +1100,8 @@ function openEditMedicineModal(index) {
   if (!med) return;
 
   document.getElementById('edit-med-name').value = med.nom;
-  document.getElementById('edit-med-pathology').value = med.pathologie || '';
-  document.getElementById('edit-med-quantity').value = med.quantite || 20;
+  document.getElementById('edit-med-posology').value = med.posologie || med.pathologie || '1 cp 3 fois par jour';
+  document.getElementById('edit-med-boite').value = med.boites || (med.quantite ? formatBoites(med.quantite) : '01 boîte');
 
   openModal('modal-edit-medicine');
 }
@@ -948,8 +1111,8 @@ function saveEditedMedicine() {
   if (idx === null || idx < 0 || idx >= AppState.activePrescription.medicines.length) return;
 
   const nom = document.getElementById('edit-med-name').value.trim();
-  const pathologie = document.getElementById('edit-med-pathology').value.trim();
-  const quantite = parseInt(document.getElementById('edit-med-quantity').value, 10) || 1;
+  const posologie = document.getElementById('edit-med-posology').value.trim() || '1 cp 3 fois par jour';
+  const boites = formatBoites(document.getElementById('edit-med-boite').value.trim());
 
   if (!nom) {
     alert('Le nom du médicament est requis.');
@@ -959,15 +1122,15 @@ function saveEditedMedicine() {
   AppState.activePrescription.medicines[idx] = {
     ...AppState.activePrescription.medicines[idx],
     nom,
-    pathologie,
-    quantite
+    posologie,
+    boites
   };
 
   closeModal('modal-edit-medicine');
   saveToStorage();
   renderMedicineRows();
   renderA4Preview();
-  showToast('Ligne modifiée avec succès.');
+  showToast('Médicament modifié avec succès.');
 }
 
 function confirmDeleteMedicine(index) {
@@ -983,18 +1146,18 @@ function confirmDeleteMedicine(index) {
   }
 }
 
-// Custom Medicine Modal (Spec #12)
+// Custom Medicine Modal
 function openCustomMedicineModal(prefillName = '') {
   document.getElementById('custom-med-name').value = prefillName;
-  document.getElementById('custom-med-pathology').value = '';
-  document.getElementById('custom-med-quantity').value = 20;
+  document.getElementById('custom-med-posology').value = '1 cp 3 fois par jour';
+  document.getElementById('custom-med-boite').value = '01 boîte';
   openModal('modal-custom-medicine');
 }
 
 function saveCustomMedicine() {
   const nom = document.getElementById('custom-med-name').value.trim();
-  const pathologie = document.getElementById('custom-med-pathology').value.trim() || 'Traitement';
-  const quantite = parseInt(document.getElementById('custom-med-quantity').value, 10) || 20;
+  const posologie = document.getElementById('custom-med-posology').value.trim() || '1 cp 3 fois par jour';
+  const boites = formatBoites(document.getElementById('custom-med-boite').value.trim());
 
   if (!nom) {
     alert('Le nom du médicament est obligatoire.');
@@ -1004,8 +1167,8 @@ function saveCustomMedicine() {
   AppState.activePrescription.medicines.push({
     id: Date.now(),
     nom,
-    pathologie,
-    quantite
+    posologie,
+    boites
   });
 
   closeModal('modal-custom-medicine');
@@ -1776,8 +1939,8 @@ function renderMedicinesDb() {
     if (!medicinesDbSearchQuery) return true;
     const nameMatch = m.nom.toLowerCase().includes(medicinesDbSearchQuery);
     const dciMatch = m.dci && m.dci.toLowerCase().includes(medicinesDbSearchQuery);
-    const pathoMatch = m.pathologieDefaut && m.pathologieDefaut.toLowerCase().includes(medicinesDbSearchQuery);
-    return nameMatch || dciMatch || pathoMatch;
+    const posoMatch = (m.posologieDefaut || m.pathologieDefaut || '').toLowerCase().includes(medicinesDbSearchQuery);
+    return nameMatch || dciMatch || posoMatch;
   });
 
   if (filtered.length === 0) {
@@ -1791,8 +1954,8 @@ function renderMedicinesDb() {
     <tr>
       <td><strong>${escapeHtml(m.nom)}</strong></td>
       <td><span style="font-family: monospace; color: var(--primary-700);">${escapeHtml(m.dci || '—')}</span></td>
-      <td>${escapeHtml(m.pathologieDefaut || '—')}</td>
-      <td>${m.quantiteDefaut || 20}</td>
+      <td>${escapeHtml(m.posologieDefaut || m.pathologieDefaut || '—')}</td>
+      <td><span class="badge" style="background: #F1F5F9; color: #0F2F57; font-weight: 600;">${escapeHtml(m.boitesDefaut || (m.quantiteDefaut ? formatBoites(m.quantiteDefaut) : '01 boîte'))}</span></td>
       <td style="text-align: right;">
         <div class="table-action-group">
           <button class="btn btn-sm btn-subtle" onclick="addMedFromCatalog('${m.id}')" title="Ajouter à l'ordonnance en cours">
@@ -1821,8 +1984,8 @@ function openAddDbMedicineModal() {
 
   document.getElementById('db-med-nom').value = '';
   document.getElementById('db-med-dci').value = '';
-  document.getElementById('db-med-pathology').value = '';
-  document.getElementById('db-med-quantity').value = 20;
+  document.getElementById('db-med-posology').value = '';
+  document.getElementById('db-med-boite').value = '01 boîte';
 
   openModal('modal-db-medicine');
 }
@@ -1839,8 +2002,8 @@ function openEditDbMedicineModal(medId) {
 
   document.getElementById('db-med-nom').value = med.nom;
   document.getElementById('db-med-dci').value = med.dci || '';
-  document.getElementById('db-med-pathology').value = med.pathologieDefaut || '';
-  document.getElementById('db-med-quantity').value = med.quantiteDefaut || 20;
+  document.getElementById('db-med-posology').value = med.posologieDefaut || med.pathologieDefaut || '';
+  document.getElementById('db-med-boite').value = med.boitesDefaut || (med.quantiteDefaut ? formatBoites(med.quantiteDefaut) : '01 boîte');
 
   openModal('modal-db-medicine');
 }
@@ -1848,8 +2011,8 @@ function openEditDbMedicineModal(medId) {
 function saveDbMedicine() {
   const nom = document.getElementById('db-med-nom').value.trim();
   const dci = document.getElementById('db-med-dci').value.trim();
-  const pathologie = document.getElementById('db-med-pathology').value.trim() || 'Traitement';
-  const quantite = parseInt(document.getElementById('db-med-quantity').value, 10) || 20;
+  const posologie = document.getElementById('db-med-posology').value.trim() || '1 cp 3 fois par jour';
+  const boites = formatBoites(document.getElementById('db-med-boite').value.trim());
 
   if (!nom) {
     alert('Le nom commercial du médicament est obligatoire.');
@@ -1863,8 +2026,8 @@ function saveDbMedicine() {
         ...AppState.medicinesDb[idx],
         nom,
         dci,
-        pathologieDefaut: pathologie,
-        quantiteDefaut: quantite
+        posologieDefaut: posologie,
+        boitesDefaut: boites
       };
       showToast(`Médicament "${nom}" modifié.`);
     }
@@ -1873,8 +2036,8 @@ function saveDbMedicine() {
       id: 'm' + Date.now(),
       nom,
       dci,
-      pathologieDefaut: pathologie,
-      quantiteDefaut: quantite
+      posologieDefaut: posologie,
+      boitesDefaut: boites
     };
     AppState.medicinesDb.unshift(newMed);
     showToast(`Médicament "${nom}" ajouté à la base.`);
@@ -2731,12 +2894,21 @@ function deleteRecentCertificate(certId) {
   }
 }
 
-// Trigger printable A4 certificate document
+// Trigger printable certificate document (Format A4)
 function triggerCertificatePrint() {
+  let styleEl = document.getElementById('dynamic-print-page-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamic-print-page-style';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = '@page { size: A4 portrait; margin: 12mm 15mm; }';
+
   document.body.classList.add('printing-certificate');
   window.print();
   setTimeout(() => {
     document.body.classList.remove('printing-certificate');
+    styleEl.textContent = '@page { size: A5 portrait; margin: 6mm 8mm; }';
   }, 1000);
 }
 

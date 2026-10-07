@@ -1,44 +1,43 @@
-// Prescription Item Model strictly following OrdoPro Spec V3
-// Only contains: medicament, pathologie, quantite.
-// Excluded: dosage, forme, duree, posologie, conseils.
+// Prescription Item Model following OrdoPro Medical Specs
+// Fields: medicament, posologie, boites
 class PrescriptionItem {
   final String id;
   final String medicament;
-  final String pathologie;
-  final int quantite;
+  final String posologie;
+  final String boites;
 
   PrescriptionItem({
     required this.id,
     required this.medicament,
-    required this.pathologie,
-    required this.quantite,
+    required this.posologie,
+    this.boites = '01 boîte',
   });
 
   PrescriptionItem copyWith({
     String? id,
     String? medicament,
-    String? pathologie,
-    int? quantite,
+    String? posologie,
+    String? boites,
   }) {
     return PrescriptionItem(
       id: id ?? this.id,
       medicament: medicament ?? this.medicament,
-      pathologie: pathologie ?? this.pathologie,
-      quantite: quantite ?? this.quantite,
+      posologie: posologie ?? this.posologie,
+      boites: boites ?? this.boites,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'medicament': medicament,
-    'pathologie': pathologie,
-    'quantite': quantite,
+    'posologie': posologie,
+    'boites': boites,
   };
 
   factory PrescriptionItem.fromJson(Map<String, dynamic> json) => PrescriptionItem(
     id: json['id'] as String,
     medicament: json['medicament'] as String,
-    pathologie: json['pathologie'] as String,
-    quantite: json['quantite'] as int,
+    posologie: (json['posologie'] ?? json['pathologie'] ?? '1 cp 3 fois par jour') as String,
+    boites: (json['boites'] ?? (json['quantite'] != null ? '${json['quantite']} boîte' : '01 boîte')) as String,
   );
 }
